@@ -1,0 +1,33 @@
+﻿<Window x:Class="Workmeter.Views.ReturnTaskView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Workmeter.ViewModels"
+        mc:Ignorable="d"
+        Title="Вернуть задачу" Height="563" Width="381" Background="Gray" FontSize="20" WindowStartupLocation="CenterOwner">
+    <Window.DataContext>
+        <local:ReturnTaskViewModel/>
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <ListBox Grid.Row="0" ItemsSource="{Binding Path=Items}" SelectedItem="{Binding Path=SelectedItem}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Path=Title}" MouseLeftButtonDown="Item_OnMouseLeftButtonDown"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <CheckBox Grid.Row="1" Margin="0,5" IsChecked="{Binding Path=SwitchToIt}">Переключиться на эту задачу</CheckBox>
+        <CheckBox Grid.Row="2" IsChecked="{Binding Path=ResetIt}">Сбросить задачу</CheckBox>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="7">
+            <Button Width="100" IsDefault="True" Click="Ok_OnClick">OK</Button>
+            <Button Width="100" IsCancel="True">Отмена</Button>
+        </StackPanel>
+    </Grid>
+</Window>
