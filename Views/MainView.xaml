@@ -8,19 +8,25 @@
         xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
         Title="WorkMeter" Height="473" Width="811" WindowStartupLocation="CenterScreen" FontSize="20"
-        Closed="MainView_OnClosed" StateChanged="MainView_OnStateChanged" Visibility="Hidden">
+        Closed="MainView_OnClosed" StateChanged="MainView_OnStateChanged" Visibility="Visible"
+        Initialized="MainView_OnInitialized">
     <Window.Resources>
         <converters:TaskStateToImagePathConverter x:Key="StateToImagePathConverter"/>
         <converters:TaskStateToImageVisibilityConverter x:Key="StateToVisibilityConverter"/>
+        <converters:DurationToTextConverter x:Key="DurationConverter"/>
     </Window.Resources>
     <Window.DataContext>
         <local:MainViewModel/>
     </Window.DataContext>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
         <tb:TaskbarIcon IconSource="../Images/play.ico"
                         PopupActivation="DoubleClick" PreviewTrayPopupOpen="TaskbarIcon_OnPreviewTrayPopupOpen"/>
         
-        <ListView x:Name="lvTasks" ItemsSource="{Binding Items}" Grid.ColumnSpan="2"
+        <ListView x:Name="lvTasks" Grid.Row="0" ItemsSource="{Binding Items}"
                   SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
             <ListView.View>
                 <GridView>
@@ -34,7 +40,7 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Задача">
+                        <GridViewColumn Header="Задача" Width="Auto">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate DataType="local:TaskItemViewModel">
                                     <TextBlock Text="{Binding Path=Text}" Foreground="{Binding Path=Foreground}"
@@ -45,7 +51,8 @@
                         <GridViewColumn Header="Длительность">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate DataType="local:TaskItemViewModel">
-                                    <TextBlock Text="{Binding DurationView }" Foreground="{Binding Path=Foreground}"
+                                    <TextBlock Text="{Binding Duration, Converter={StaticResource DurationConverter}}" 
+                                               Foreground="{Binding Path=Foreground}"
                                                MouseLeftButtonDown="Item_OnMouseLeftButtonDown"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
@@ -55,11 +62,22 @@
             </ListView.View>
             <ListView.ContextMenu>
                 <ContextMenu>
+                    <MenuItem Header="Старт" Click="Start_OnClick"/>
                     <MenuItem Header="Скрыть" Click="Hide_OnClick"/>
                     <MenuItem Header="Сбросить все" Click="ResetAll_OnClick"/>
                     <MenuItem Header="Вернуть задачу" Click="ReturnTask_OnClick"/>
                 </ContextMenu>
             </ListView.ContextMenu>
         </ListView>
+
+        <StatusBar Grid.Row="1" FontSize="18" Foreground="White">
+            <StatusBarItem>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Общая длительность:" Margin="0,0,15,0"/>
+                    <TextBlock Text="{Binding Path=DurationTotal, Converter={StaticResource DurationConverter}}"/>
+                </StackPanel>
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
+    
 </Window>

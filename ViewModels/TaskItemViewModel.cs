@@ -43,8 +43,6 @@ namespace Workmeter.ViewModels
 
         public bool IsNew => Model == null;
 
-        public string DurationView => Duration?.ToString(@"hh\:mm\:ss") ?? string.Empty;
-
         public TimeSpan? Duration
         {
             get
@@ -73,14 +71,14 @@ namespace Workmeter.ViewModels
 
         private void Timer_Tick(object sender, EventArgs e)
         {
-            OnPropertyChanged(nameof(DurationView));
+            OnPropertyChanged(nameof(Duration));
         }
 
         private void NotifyItemChanged()
         {
             OnPropertyChanged(nameof(Model));
             OnPropertyChanged(nameof(Foreground));
-            OnPropertyChanged(nameof(DurationView));
+            OnPropertyChanged(nameof(Duration));
         }
 
         public void Start()

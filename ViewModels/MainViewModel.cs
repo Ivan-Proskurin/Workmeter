@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -10,9 +12,13 @@ using Workmeter.Views;
 
 namespace Workmeter.ViewModels
 {
+    [SuppressMessage("ReSharper", "InvertIf")]
     public class MainViewModel : INotifyPropertyChanged
     {
         private readonly WorkmeterDb _db;
+
+        public bool StartHidden =>
+            Environment.GetCommandLineArgs().Any(arg => arg == "/hidden");
 
         public MainViewModel()
         {
@@ -39,8 +45,44 @@ namespace Workmeter.ViewModels
             {
                 _db = WorkmeterDb.Instance;
                 _items = new ObservableCollection<TaskItemViewModel>(
-                    _db.Tasks.Where(t => t.State != TaskState.Hidden).Select(t => new TaskItemViewModel(t)));
+                    _db.Tasks.Where(t => t.State != TaskState.Hidden).Select(ItemViewModel));
                 _items.Add(new TaskItemViewModel(null));
+            }
+
+            _items.CollectionChanged += ItemsOnCollectionChanged;
+        }
+
+        private TaskItemViewModel ItemViewModel(WorkmeterTask task)
+        {
+            var viewModel = new TaskItemViewModel(task);
+            viewModel.PropertyChanged += ItemOnPropertyChanged;
+            return viewModel;
+        }
+
+        private void ItemsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            TaskItemViewModel item;
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    item = e.NewItems[0] as TaskItemViewModel;
+                    if (item != null)
+                        item.PropertyChanged += ItemOnPropertyChanged;
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    item = e.OldItems[0] as TaskItemViewModel;
+                    if (item != null)
+                        item.PropertyChanged -= ItemOnPropertyChanged;
+                    break;
+            }
+        }
+
+        private void ItemOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            TaskItemViewModel item;
+            if (e.PropertyName == nameof(item.Duration))
+            {
+                OnPropertyChanged(nameof(DurationTotal));
             }
         }
 
@@ -155,5 +197,22 @@ namespace Workmeter.ViewModels
             SelectedItem = item;
             SwitchItem();
         }
+
+        public void Start()
+        {
+            if (MessageBox.Show(Application.Current.MainWindow, "Сбросить все задачи и начать отсчет?",
+                "Workmeter", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK) return;
+            var active = _items.SingleOrDefault(item => !item.IsNew && (item.Model.State == TaskState.Active || item.Model.State == TaskState.Paused));
+            active?.Stop();
+            foreach (var item in _items.Where(item => !item.IsNew))
+            {
+                item.Reset();
+            }
+            _selectedItem?.Start();
+        }
+
+        public TimeSpan DurationTotal => 
+            new TimeSpan(_items.Where(item => !item.IsNew).Sum(item => item.Duration?.Ticks ?? 0));
+
     }
 }

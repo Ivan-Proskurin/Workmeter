@@ -57,5 +57,15 @@ namespace Workmeter.Views
             WindowState = WindowState.Normal;
             BringIntoView();
         }
+
+        public void Start_OnClick(object sender, RoutedEventArgs e)
+        {
+            ViewModel?.Start();
+        }
+
+        private void MainView_OnInitialized(object sender, EventArgs e)
+        {
+            Visibility = ViewModel?.StartHidden ?? true ? Visibility.Hidden : Visibility.Visible;
+        }
     }
 }

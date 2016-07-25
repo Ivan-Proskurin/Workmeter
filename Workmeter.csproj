@@ -64,6 +64,7 @@
     </ApplicationDefinition>
     <Compile Include="ViewModels\NewTaskViewModel.cs" />
     <Compile Include="ViewModels\ReturnTaskViewModel.cs" />
+    <Compile Include="Views\Converters\DurationToTextConverter.cs" />
     <Compile Include="Views\NewTaskView.xaml.cs">
       <DependentUpon>NewTaskView.xaml</DependentUpon>
     </Compile>
