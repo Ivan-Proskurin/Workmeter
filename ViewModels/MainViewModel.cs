@@ -83,6 +83,19 @@ namespace Workmeter.ViewModels
             if (e.PropertyName == nameof(item.Duration))
             {
                 OnPropertyChanged(nameof(DurationTotal));
+                UpdateDurationTotal();
+            }
+        }
+
+        private bool _maxDurationExceeded;
+        private void UpdateDurationTotal()
+        {
+            if (_maxDurationExceeded) return;
+            var maxDuration = new TimeSpan(8, 0, 0);
+            if (DurationTotal >= maxDuration)
+            {
+                TrayIcon?.ShowInfoBallonTip("Workmeter", $"Общая длительность работ превысила {maxDuration}!");
+                _maxDurationExceeded = true;
             }
         }
 
@@ -176,6 +189,7 @@ namespace Workmeter.ViewModels
             {
                 item.Reset();
             }
+            _maxDurationExceeded = false;
         }
 
         public void ReturnTask()
@@ -209,10 +223,13 @@ namespace Workmeter.ViewModels
                 item.Reset();
             }
             _selectedItem?.Start();
+            _maxDurationExceeded = false;
         }
 
         public TimeSpan DurationTotal => 
             new TimeSpan(_items.Where(item => !item.IsNew).Sum(item => item.Duration?.Ticks ?? 0));
+
+        public ITrayIcon TrayIcon { get; set; }
 
     }
 }

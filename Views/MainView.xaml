@@ -23,7 +23,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <tb:TaskbarIcon IconSource="../Images/play.ico"
+        <tb:TaskbarIcon x:Name="trayIcon" IconSource="../Images/play.ico"
                         PopupActivation="DoubleClick" PreviewTrayPopupOpen="TaskbarIcon_OnPreviewTrayPopupOpen"/>
         
         <ListView x:Name="lvTasks" Grid.Row="0" ItemsSource="{Binding Items}"
