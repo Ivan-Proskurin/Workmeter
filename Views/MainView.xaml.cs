@@ -20,12 +20,6 @@ namespace Workmeter.Views
 
         public MainViewModel ViewModel => DataContext as MainViewModel;
 
-        public void Item_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ClickCount != 2) return;
-            ViewModel?.SwitchItem();
-        }
-
         public void MainView_OnClosed(object sender, EventArgs e)
         {
             ViewModel?.CloseDb();
@@ -77,6 +71,11 @@ namespace Workmeter.Views
         public void ShowInfoBallonTip(string title, string text)
         {
             trayIcon.ShowBalloonTip(title, text, BalloonIcon.Info);
+        }
+
+        private void Item_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            ViewModel?.SwitchItem();
         }
     }
 }

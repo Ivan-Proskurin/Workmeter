@@ -28,6 +28,88 @@
         
         <ListView x:Name="lvTasks" Grid.Row="0" ItemsSource="{Binding Items}"
                   SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+            <ListView.ItemContainerStyle>
+                <!--ListViewItem style definition-->
+                <Style TargetType="ListViewItem">
+                    <EventSetter Event="MouseDoubleClick" Handler="Item_OnMouseDoubleClick" />
+                    <Setter Property="FocusVisualStyle" Value="{DynamicResource ListViewItemFocusVisual}" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="Foreground" Value="{Binding Path=Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}}"/>
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="Margin" Value="0,0,0,1" />
+                    <Setter Property="Padding" Value="5,2" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                <ControlTemplate.Resources>
+                                    <Storyboard x:Key="HoverOn">
+                                        <ColorAnimation Duration="0:0:0.2" Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)" Storyboard.TargetName="row_content"
+                                            To="{StaticResource ColorForeground}"/>
+                                    </Storyboard>
+                                    <Storyboard x:Key="HoverOff">
+                                        <ColorAnimation Duration="0:0:0.2" Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)" Storyboard.TargetName="row_content"
+                                            To="{StaticResource ColorForegroundWhite}"/>
+                                    </Storyboard>
+                                    <Storyboard x:Key="SelectedOn">
+                                        <DoubleAnimation Duration="0:0:0.2" Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="HoverSelected" To="1"/>
+                                    </Storyboard>
+                                    <Storyboard x:Key="SelectedOff">
+                                        <DoubleAnimation Duration="0:0:0.2" Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="HoverSelected" To="0"/>
+                                    </Storyboard>
+                                </ControlTemplate.Resources>
+                                <Border SnapsToDevicePixels="True" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="2" x:Name="border">
+                                    <Grid Margin="2,0">
+                                        <Rectangle x:Name="Background" IsHitTestVisible="False" Fill="{TemplateBinding Background}" RadiusX="0"
+                                       Stroke="{TemplateBinding BorderBrush}" StrokeThickness="{TemplateBinding BorderThickness}"/>
+                                        <Rectangle x:Name="HoverSelected" IsHitTestVisible="False" Opacity="0" RadiusX="0">
+                                            <Rectangle.Fill>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Offset="0" Color="{StaticResource HighlightComboBoxItem1}"/>
+                                                    <GradientStop Offset="1" Color="{StaticResource HighlightComboBoxItem2}"/>
+                                                </LinearGradientBrush>
+                                            </Rectangle.Fill>
+                                        </Rectangle>
+                                        <Border Background="Transparent">
+                                            <GridViewRowPresenter x:Name="row_content" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Stretch" Margin="0,2" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard Storyboard="{StaticResource SelectedOn}"/>
+                                        </Trigger.EnterActions>
+                                        <Trigger.ExitActions>
+                                            <BeginStoryboard Storyboard="{StaticResource SelectedOff}"/>
+                                        </Trigger.ExitActions>
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsMouseOver" Value="True" />
+                                            <Condition Property="Selector.IsSelected" Value="False" />
+                                        </MultiTrigger.Conditions>
+                                        <MultiTrigger.EnterActions>
+                                            <BeginStoryboard Storyboard="{StaticResource HoverOn}"/>
+                                        </MultiTrigger.EnterActions>
+                                        <MultiTrigger.ExitActions>
+                                            <BeginStoryboard Storyboard="{StaticResource HoverOff}"/>
+                                        </MultiTrigger.ExitActions>
+                                    </MultiTrigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Foreground">
+                                            <Setter.Value>
+                                                <SolidColorBrush Color="{StaticResource DisabledForeground3}"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
             <ListView.View>
                 <GridView>
                     <GridView.Columns>
@@ -35,16 +117,14 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate DataType="local:TaskItemViewModel">
                                     <Image Source="{Binding Model.State, Converter={StaticResource StateToImagePathConverter}}" Width="24"
-                                           Visibility="{Binding Path=Model.State, Converter={StaticResource StateToVisibilityConverter}}"
-                                           MouseLeftButtonDown="Item_OnMouseLeftButtonDown"/>
+                                           Visibility="{Binding Path=Model.State, Converter={StaticResource StateToVisibilityConverter}}"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                         <GridViewColumn Header="Задача" Width="Auto">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate DataType="local:TaskItemViewModel">
-                                    <TextBlock Text="{Binding Path=Text}" Foreground="{Binding Path=Foreground}"
-                                               MouseLeftButtonDown="Item_OnMouseLeftButtonDown"/>
+                                    <TextBlock Text="{Binding Path=Text}" Foreground="{Binding Path=Foreground}"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
@@ -52,8 +132,7 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate DataType="local:TaskItemViewModel">
                                     <TextBlock Text="{Binding Duration, Converter={StaticResource DurationConverter}}" 
-                                               Foreground="{Binding Path=Foreground}"
-                                               MouseLeftButtonDown="Item_OnMouseLeftButtonDown"/>
+                                               Foreground="{Binding Path=Foreground}"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
