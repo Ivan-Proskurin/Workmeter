@@ -87,10 +87,11 @@ namespace Workmeter.ViewModels
             }
         }
 
+        private bool _updatingItems;
         private bool _maxDurationExceeded;
         private void UpdateDurationTotal()
         {
-            if (_maxDurationExceeded) return;
+            if (_maxDurationExceeded || _updatingItems) return;
             var maxDuration = new TimeSpan(8, 0, 0);
             if (DurationTotal >= maxDuration)
             {
@@ -114,6 +115,9 @@ namespace Workmeter.ViewModels
             }
         }
 
+        public TaskItemViewModel ActiveItem =>
+            _items?.SingleOrDefault(x => !x.IsNew && (x.Model.State == TaskState.Active || x.Model.State == TaskState.Paused));
+
         public void SwitchItem()
         {
             if (_selectedItem.IsNew)
@@ -121,7 +125,7 @@ namespace Workmeter.ViewModels
                 NewTask();
                 return;
             }
-            var active = _items.SingleOrDefault(x => !x.IsNew && (x.Model.State == TaskState.Active || x.Model.State == TaskState.Paused));
+            var active = ActiveItem;
             if (active != null && active == _selectedItem)
             {
                 if (active.Model.State == TaskState.Active)
@@ -185,10 +189,7 @@ namespace Workmeter.ViewModels
         {
             if (MessageBox.Show(Application.Current.MainWindow, "Сбросить все задачи?",
                 "Workmeter", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK) return;
-            foreach (var item in _items.Where(item => !item.IsNew))
-            {
-                item.Reset();
-            }
+            ResetItems();
             _maxDurationExceeded = false;
         }
 
@@ -216,14 +217,26 @@ namespace Workmeter.ViewModels
         {
             if (MessageBox.Show(Application.Current.MainWindow, "Сбросить все задачи и начать отсчет?",
                 "Workmeter", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK) return;
-            var active = _items.SingleOrDefault(item => !item.IsNew && (item.Model.State == TaskState.Active || item.Model.State == TaskState.Paused));
-            active?.Stop();
-            foreach (var item in _items.Where(item => !item.IsNew))
-            {
-                item.Reset();
-            }
+            ResetItems();
             _selectedItem?.Start();
             _maxDurationExceeded = false;
+        }
+
+        private void ResetItems()
+        {
+            _updatingItems = true;
+            try
+            {
+                ActiveItem?.Stop();
+                foreach (var item in _items.Where(item => !item.IsNew))
+                {
+                    item.Reset();
+                }
+            }
+            finally
+            {
+                _updatingItems = false;
+            }
         }
 
         public TimeSpan DurationTotal => 
